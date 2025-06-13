@@ -5,7 +5,7 @@ import {
   tokenService,
 } from './../services/index.js';
 import { userSchema } from './../schemas/index.js';
-import { ApiError } from '../exeptions/api.error.js';
+import { ApiError } from '../exceptions/api.error.js';
 import { dynamicSchema } from './../utils/dynamicSchema.js';
 import bcrypt from 'bcrypt';
 

@@ -1,4 +1,4 @@
-import { ApiError } from '../exeptions/api.error.js';
+import { ApiError } from '../exceptions/api.error.js';
 import { User } from './../models/index.js';
 import { v4 as uuidv4 } from 'uuid';
 import { emailService } from './index.js';

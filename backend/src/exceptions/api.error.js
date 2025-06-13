@@ -10,19 +10,25 @@ export class ApiError extends Error {
     return new ApiError({ message, errors, status: 400 });
   }
 
-  static unauthorized(errors) {
-    return new ApiError({
-      message: 'unauthorized user',
-      errors,
-      status: 401,
-    });
-  }
-
   static notFound(errors) {
     return new ApiError({
       message: 'not found',
       errors,
       status: 404,
     });
+  }
+
+  static fromSequelizeUnique(error) {
+    if (error.name !== 'SequelizeUniqueConstraintError') {
+      throw error;
+    }
+
+    const errorMap = {};
+
+    for (const err of error.errors) {
+      errorMap[err.path] = 'Already taken';
+    }
+
+    return ApiError.badRequest('Unique constraint error', errorMap);
   }
 }
