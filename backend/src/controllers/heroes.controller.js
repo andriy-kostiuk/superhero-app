@@ -14,9 +14,10 @@ const getAll = async (req, res) => {
   res.json({
     data: heroes.map((hero) => heroesService.normalizeForList(hero)),
     pagination: {
-      currentPage: page,
+      page: page,
       totalPages: Math.ceil(total / limit),
-      totalHeroes: total,
+      totalItems: total,
+      perPage: limit,
     },
   });
 };

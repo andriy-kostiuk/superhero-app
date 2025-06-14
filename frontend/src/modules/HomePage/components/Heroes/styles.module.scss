@@ -1,0 +1,42 @@
+.heroes {
+  padding-top: 4rem;
+  text-align: center;
+
+  &__title {
+    @include text-3xl-bold;
+    color: $primary;
+    margin-bottom: 1rem;
+  }
+
+  &__subtitle {
+    font-size: 1rem;
+    color: $light-text;
+    margin-bottom: 2rem;
+    max-width: 800px;
+    margin-inline: auto;
+    line-height: 1.6;
+
+    @include text-lg-medium;
+  }
+
+  &__list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    justify-content: center;
+
+    @include on-tablet {
+      flex-direction: row;
+      flex-wrap: wrap;
+    }
+
+    @include on-desktop {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+    }
+  }
+
+  &__pagination {
+    margin-top: 2rem;
+  }
+}

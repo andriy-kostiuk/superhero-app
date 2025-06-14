@@ -1,0 +1,121 @@
+// fonts
+$font-family: 'Roboto', 'Arial', sans-serif;
+
+// Typography
+@mixin text-xs {
+  font-size: 12px;
+  line-height: 16px;
+}
+
+@mixin text-sm {
+  font-size: 14px;
+  line-height: 20px;
+}
+
+@mixin text-base {
+  font-size: 16px;
+  line-height: 24px;
+}
+
+@mixin text-lg {
+  font-size: 18px;
+  line-height: 28px;
+}
+
+@mixin text-xl {
+  font-size: 20px;
+  line-height: 28px;
+}
+
+@mixin text-2xl {
+  font-size: 24px;
+  line-height: 32px;
+}
+
+@mixin text-3xl {
+  font-size: 30px;
+  line-height: 36px;
+}
+
+// Weight
+@mixin weight-regular {
+  font-weight: 400;
+}
+
+@mixin weight-medium {
+  font-weight: 500;
+}
+
+@mixin weight-semi {
+  font-weight: 600;
+}
+
+@mixin weight-bold {
+  font-weight: 700;
+}
+
+// Combine
+@mixin text-xs-medium {
+  @include text-xs;
+  @include weight-medium;
+}
+
+@mixin text-sm-regular {
+  @include text-sm;
+  @include weight-regular;
+}
+
+@mixin text-base-regular {
+  @include text-base;
+  @include weight-regular;
+}
+
+@mixin text-base-medium {
+  @include text-base;
+  @include weight-medium;
+}
+
+@mixin text-base-semi {
+  @include text-base;
+  @include weight-semi;
+}
+
+@mixin text-lg-regular {
+  @include text-lg;
+  @include weight-regular;
+}
+
+@mixin text-lg-medium {
+  @include text-lg;
+  @include weight-medium;
+}
+
+@mixin text-lg-semi {
+  @include text-lg;
+  @include weight-semi;
+}
+
+@mixin text-xl-semi {
+  @include text-xl;
+  @include weight-semi;
+}
+
+@mixin text-2xl-semi {
+  @include text-2xl;
+  @include weight-semi;
+}
+
+@mixin text-2xl-bold {
+  @include text-2xl;
+  @include weight-bold;
+}
+
+@mixin text-3xl-semi {
+  @include text-3xl;
+  @include weight-semi;
+}
+
+@mixin text-3xl-bold {
+  @include text-3xl;
+  @include weight-semi;
+}

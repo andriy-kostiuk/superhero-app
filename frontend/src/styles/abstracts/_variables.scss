@@ -1,0 +1,44 @@
+// viewports
+$mobile-width: 372px;
+$tablet-width: 768px;
+$desktop-width: 1024px;
+$max-width: 1440px;
+
+// inline paddings
+$mobile-padding-inline: 16px;
+$tablet-padding-inline: 25px;
+$desktop-padding-inline: 60px;
+
+// Основні кольори
+$primary: #d62828; // Героїчний червоний — рішучість, дія
+$secondary: #003049; // Темно-синій — глибина, стабільність, нічне небо
+$accent: #f77f00; // Яскравий помаранчевий — енергія, драйв
+
+// Текст
+$text: #1a1a1a; // Глибокий темний — для контрасту
+$light-text: #73808e; // Світло-сірий — для описів і підписів
+
+// Фон
+$background: linear-gradient(
+  135deg,
+  #f8f9fa 0%,
+  #e9ecef 50%,
+  #dee2e6 100%
+); // Світла нейтральна база для контрасту з акцентами
+
+$header-bg: #f1f3f5;
+$footer-bg: #f1f3f5;
+
+// Акценти
+$highlight: #ffd60a; // Супергеройське сяйво — жовтий як у Бетмена/Флеша
+$border-color: #ced4da; // Стриманий сірий для розділення блоків
+
+// Службові кольори
+$success: #43a047; // Зелений (позитивна дія)
+$danger: #d32f2f; // Червоний (помилка)
+$warning: #fbc02d; // Яскравий жовтий (увага)
+
+// Базові
+$white: #ffffff;
+$black: #0d0d0d;
+$shadow: rgba(0, 0, 0, 0.05); // Дуже м’яка тінь

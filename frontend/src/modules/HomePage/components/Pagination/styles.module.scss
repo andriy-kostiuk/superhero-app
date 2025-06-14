@@ -1,0 +1,56 @@
+.pagination {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  align-items: center;
+
+  &__container {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  &__item {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    @include on-tablet {
+      width: 40px;
+      height: 40px;
+    }
+
+    @include on-desktop {
+      width: 45px;
+      height: 45px;
+    }
+
+    &--btn {
+      border: 2px solid $border-color;
+      @include transition;
+
+      &:hover {
+        background: $secondary;
+        scale: 1.05;
+      }
+
+      &:active {
+        scale: 0.95;
+      }
+    }
+
+    &--next {
+      transform: rotate(90deg);
+    }
+
+    &--prev {
+      transform: rotate(-90deg);
+    }
+  }
+
+  &__dots {
+    align-self: end;
+  }
+}

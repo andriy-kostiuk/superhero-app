@@ -1,0 +1,10 @@
+.pagination-item {
+  @include text-base-semi;
+
+  &--active,
+  &--active:hover {
+    cursor: auto;
+    background-color: $primary;
+    color: $white;
+  }
+}

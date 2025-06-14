@@ -1,0 +1,26 @@
+.logo {
+  font-weight: bold;
+  font-size: 1.6rem;
+  color: $primary;
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+
+  @include transition(0.4s, transform);
+
+  &:hover {
+    transform: scale(1.03);
+  }
+
+  &__img {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+    display: block;
+
+    @include on-tablet {
+      height: 45px;
+      width: 45px;
+    }
+  }
+}

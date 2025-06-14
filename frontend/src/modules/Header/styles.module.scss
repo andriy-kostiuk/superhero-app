@@ -1,0 +1,32 @@
+@use 'sass:color';
+
+.header {
+  background: $header-bg;
+  border-bottom: 1px solid $secondary;
+  box-shadow: 0 2px 4px $shadow;
+
+  &__container {
+    display: flex;
+    gap: 1rem;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+  }
+
+  &__link {
+    display: block;
+    text-decoration: none;
+    color: $secondary;
+    font-size: 1.1rem;
+    transition: transform 0.3s ease;
+    font-weight: 600;
+
+    &:hover {
+      transform: scale(1.1);
+      color: color.scale($secondary, $lightness: -15%);
+    }
+
+    @include underline-animation;
+  }
+}

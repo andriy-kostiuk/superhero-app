@@ -1,0 +1,10 @@
+.footer {
+  background: $footer-bg;
+  padding: 1rem 0;
+  position: relative;
+  box-shadow: 0 2px 4px $shadow;
+
+  &__end {
+    text-align: center;
+  }
+}
