@@ -1,43 +1,74 @@
-import { heroesService } from '../services/index.js';
+import { heroesService, heroImagesService } from '../services/index.js';
 import { ApiError } from '../exceptions/api.error.js';
 import { heroSchema } from '../schemas/index.js';
 import { dynamicSchema } from '../utils/dynamicSchema.js';
+import { removeUploadedFiles } from '../utils/removeUploadedFiles.js';
+import { client } from '../utils/db.js';
 
 const getAll = async (req, res) => {
-  const heroes = await heroesService.getAll();
+  const limit = 5;
+  const page = parseInt(req.query.page) || 1;
 
-  res.json(heroes.map(heroesService.normalize));
+  const { heroes, total } = await heroesService.getListPage({ limit, page });
+
+  res.json({
+    data: heroes.map((hero) => heroesService.normalizeForList(hero)),
+    pagination: {
+      currentPage: page,
+      totalPages: Math.ceil(total / limit),
+      totalHeroes: total,
+    },
+  });
 };
 
 const getOne = async (req, res) => {
   const { id } = req.params;
 
-  const hero = await heroesService.getOne({ id });
+  const hero = await heroesService.getOneWithImages({ id });
 
   if (!hero) {
     throw ApiError.notFound();
   }
 
-  res.json(heroesService.normalize(hero));
+  res.json(heroesService.normalizeWithImages(hero));
 };
 
-const create = async (req, res) => {
+const create = async (req, res, next) => {
   const heroInformation = req.body;
   const files = req.files;
-
-  console.log(files);
-
-  console.log('INFO', heroInformation);
 
   const { error, value } = heroSchema.validate(heroInformation);
 
   if (error) {
+    await removeUploadedFiles(files);
     throw ApiError.badRequest(error.message, { field: error.message });
   }
 
-  await heroesService.create(value);
+  try {
+    const result = await client.transaction(async (transaction) => {
+      const heroData = await heroesService.create(value, { transaction });
 
-  res.status(201).end();
+      const images = await heroImagesService.createMultiple(
+        files,
+        heroData.id,
+        {
+          transaction,
+        },
+      );
+
+      const newHero = {
+        ...heroesService.normalize(heroData),
+        images: images.map(heroImagesService.normalize),
+      };
+
+      return newHero;
+    });
+
+    res.status(201).json(result);
+  } catch (error) {
+    await removeUploadedFiles(files);
+    next(error);
+  }
 };
 
 const update = async (req, res) => {
@@ -65,12 +96,24 @@ const update = async (req, res) => {
 
 const remove = async (req, res) => {
   const { id } = req.params;
-  const deleted = await heroesService.remove({ id });
+  let imagesToRemove = [];
 
-  if (!deleted) {
-    throw ApiError.notFound();
-  }
+  await client.transaction(async (transaction) => {
+    const existingHero = await heroesService.getOneWithImages(
+      { id },
+      { transaction },
+    );
+    if (!existingHero) {
+      throw ApiError.notFound();
+    }
 
+    imagesToRemove = existingHero.images;
+
+    await heroImagesService.remove({ heroId: id }, { transaction });
+    await heroesService.remove({ id }, { transaction });
+  });
+
+  await removeUploadedFiles(imagesToRemove);
   res.status(204).end();
 };
 

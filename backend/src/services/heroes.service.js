@@ -1,27 +1,47 @@
 import { ApiError } from '../exceptions/api.error.js';
-import { Hero } from '../models/index.js';
+import { Hero, HeroImage } from '../models/index.js';
+import { heroImagesService } from './heroImages.service.js';
 
 export const heroesService = {
-  async create(hero) {
+  async create(hero, options = {}) {
     try {
-      return await Hero.create(hero);
+      return await Hero.create(hero, options);
     } catch (error) {
       throw ApiError.fromSequelizeUnique(error);
     }
   },
 
-  async getAll() {
-    return Hero.findAll();
+  async getListPage({ page, limit }) {
+    const offset = (page - 1) * limit;
+
+    const [heroes, total] = await Promise.all([
+      Hero.findAll({
+        limit,
+        offset,
+        order: [['createdAt', 'DESC']],
+        include: [
+          {
+            model: HeroImage,
+            as: 'images',
+            separate: true,
+            limit: 1,
+            order: [['createdAt', 'ASC']],
+          },
+        ],
+      }),
+      Hero.count(),
+    ]);
+
+    return { heroes, total };
   },
 
-  async getOne(params) {
-    const hero = await Hero.findOne({
-      where: {
-        ...params,
-      },
+  async getOneWithImages(params) {
+    const rawHero = await Hero.findOne({
+      where: params,
+      include: [{ model: HeroImage, as: 'images' }],
     });
 
-    return hero;
+    return rawHero?.toJSON() || null;
   },
 
   async update(query, newParams) {
@@ -46,11 +66,12 @@ export const heroesService = {
     }
   },
 
-  async remove({ id }) {
+  async remove({ id }, options = {}) {
     return await Hero.destroy({
       where: {
         id,
       },
+      ...options,
     });
   },
 
@@ -69,6 +90,23 @@ export const heroesService = {
       superpowers,
       catch_phrase,
       id,
+    };
+  },
+
+  normalizeWithImages(hero) {
+    const normalized = this.normalize(hero);
+
+    const images = hero.images || [];
+    normalized.images = images.map(heroImagesService.normalize);
+
+    return normalized;
+  },
+
+  normalizeForList({ images, id, nickname }) {
+    return {
+      id,
+      nickname,
+      image: images?.length > 0 ? heroImagesService.normalize(images[0]) : null,
     };
   },
 };
