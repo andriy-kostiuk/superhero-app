@@ -1,3 +1,4 @@
+import { ApiError } from '@/utils/apiError';
 import { createUrl } from '@/utils/utility';
 
 type RequestMethod = 'GET' | 'POST' | 'PATCH' | 'DELETE';
@@ -20,12 +21,21 @@ function request<T>(
     }
   }
 
-  return fetch(createUrl(url), options).then((response) => {
+  return fetch(createUrl(url), options).then(async (response) => {
+    const contentType = response.headers.get('Content-Type');
+    const isJson = contentType && contentType.includes('application/json');
+    const responseData = isJson ? await response.json() : null;
+
     if (!response.ok) {
-      throw new Error(`Request failed with status ${response.status}`);
+      throw new ApiError(
+        responseData?.message ||
+          `Request failed with status ${response.status}`,
+        response.status,
+        responseData?.errors
+      );
     }
 
-    return response.status === 204 ? (null as T) : response.json();
+    return response.status === 204 ? (null as T) : (responseData as T);
   });
 }
 

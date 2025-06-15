@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 .notFound {
   height: 100%;
   display: flex;
@@ -21,7 +23,7 @@
 
   &__button {
     background: $secondary;
-    color: $black;
+    color: $white;
     font-size: 1.2rem;
     font-weight: 600;
     padding: 12px 24px;
@@ -31,7 +33,7 @@
     transition: background 0.3s ease-in-out;
 
     &:hover {
-      background: $primary;
+      background: color.scale($secondary, $lightness: 20%);
     }
   }
 }

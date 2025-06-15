@@ -1,13 +1,17 @@
-import styles from './styles.module.scss';
-import classNames from 'classnames';
-import { useEffect, useState } from 'react';
 import type { HeroPreview } from '@/types';
+import classNames from 'classnames';
+import { useCallback, useEffect, useState } from 'react';
 import { getHeroPreviews } from '@/api/hero';
 import { HeroCard } from '../HeroCard';
 import { Pagination } from '../Pagination';
+import { Loading } from '@/modules/shared/Loading';
+
+import styles from './styles.module.scss';
 
 export const Heroes = () => {
   const [heroes, setHeroes] = useState<HeroPreview[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const [pagination, setPagination] = useState({
     page: 1,
     totalPages: 1,
@@ -16,8 +20,13 @@ export const Heroes = () => {
   });
 
   useEffect(() => {
-    getHeroPreviews({ page: pagination.page }).then(
-      ({ data, pagination: serverPagination }) => {
+    let cancelled = false;
+    setLoading(true);
+    setError('');
+    getHeroPreviews({ page: pagination.page })
+      .then(({ data, pagination: serverPagination }) => {
+        if (cancelled) return;
+
         setHeroes(data);
 
         const { totalItems, totalPages, perPage } = serverPagination;
@@ -28,13 +37,30 @@ export const Heroes = () => {
           totalPages,
           perPage,
         }));
-      }
-    );
+      })
+      .catch((err) => {
+        if (cancelled) return;
+
+        const errorMessage =
+          err?.response?.data?.message ||
+          err.message ||
+          'Failed to load heroes';
+
+        setError(errorMessage);
+      })
+      .finally(() => {
+        if (cancelled) return;
+        setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, [pagination.page]);
 
-  const setPage = (newPage: number) => {
+  const setPage = useCallback((newPage: number) => {
     setPagination((prev) => ({ ...prev, page: newPage }));
-  };
+  }, []);
 
   return (
     <section className={styles.heroes}>
@@ -44,22 +70,33 @@ export const Heroes = () => {
           Discover the stories behind the powers. Here are some of Earth's
           mightiest defenders.
         </p>
+        {loading && (
+          <div className={styles.heroes__loading}>
+            <Loading />
+          </div>
+        )}
 
-        <ul className={styles.heroes__list}>
-          {heroes.map((hero) => (
-            <HeroCard hero={hero} key={hero.id} />
-          ))}
-        </ul>
+        {error && !loading && (
+          <p className={classNames(styles.heroes__err, styles.error)}>
+            {error}
+          </p>
+        )}
 
-        <Pagination
-          // {...pagination}
-          page={5}
-          perPage={5}
-          totalItems={100}
-          totalPages={20}
-          onPageChange={setPage}
-          className={styles.heroes__pagination}
-        />
+        {!loading && !error && (
+          <>
+            <ul className={styles.heroes__list}>
+              {heroes.map((hero) => (
+                <HeroCard hero={hero} key={hero.id} />
+              ))}
+            </ul>
+
+            <Pagination
+              {...pagination}
+              onPageChange={setPage}
+              className={styles.heroes__pagination}
+            />
+          </>
+        )}
       </div>
     </section>
   );

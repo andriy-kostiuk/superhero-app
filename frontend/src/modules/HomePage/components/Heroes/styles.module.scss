@@ -1,5 +1,5 @@
 .heroes {
-  padding-top: 4rem;
+  padding: 4rem 0;
   text-align: center;
 
   &__title {
@@ -17,6 +17,17 @@
     line-height: 1.6;
 
     @include text-lg-medium;
+  }
+
+  &__loading {
+    height: 300px;
+    width: 300px;
+    margin: 0 auto;
+  }
+
+  &__err {
+    color: $danger;
+    @include text-3xl-bold;
   }
 
   &__list {

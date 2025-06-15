@@ -1,8 +1,9 @@
-import React, { useCallback } from 'react';
+import React from 'react';
 import { PaginationItem } from '../PaginationItem';
 import type { Pagination as PaginationType } from '@/types';
 import cn from 'classnames';
 import styles from './styles.module.scss';
+import { SharedSvg } from '@/modules/shared/SharedSvg';
 
 interface Props extends PaginationType {
   onPageChange: (page: number) => void;
@@ -20,19 +21,27 @@ export const Pagination: React.FC<Props> = ({
   const isFirstPage = page === 1;
   const isLastPage = page === totalPages;
 
-  const getMiddlePages = useCallback((): number[] => {
-    if (totalPages <= 5) return [];
+  const getMiddlePages = (): number[] => {
+    if (totalPages <= 5) {
+      return Array.from({ length: totalPages - 2 }, (_, i) => i + 2);
+    }
 
     if (page <= 3) return [2, 3, 4];
     if (page >= totalPages - 2)
       return [totalPages - 3, totalPages - 2, totalPages - 1];
 
     return [page - 1, page, page + 1];
-  }, [page, totalPages]);
+  };
 
   if (totalItems <= perPage) return null;
 
+  if (totalPages < 1 || page < 1 || page > totalPages) {
+    return null;
+  }
+
   const middlePages = getMiddlePages();
+
+  console.log('middlePages', middlePages);
 
   return (
     <div className={cn(styles.pagination, className)}>
@@ -44,8 +53,9 @@ export const Pagination: React.FC<Props> = ({
         )}
         onClick={() => onPageChange(page - 1)}
         disabled={isFirstPage}
+        aria-label='Previous page'
       >
-        &lt;
+        <SharedSvg type='arrow-fill' />
       </button>
 
       <PaginationItem
@@ -88,8 +98,9 @@ export const Pagination: React.FC<Props> = ({
         )}
         onClick={() => onPageChange(page + 1)}
         disabled={isLastPage}
+        aria-label='Next page'
       >
-        &gt;
+        <SharedSvg type='arrow-fill' />
       </button>
     </div>
   );

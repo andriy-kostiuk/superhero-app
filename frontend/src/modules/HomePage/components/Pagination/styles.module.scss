@@ -4,22 +4,31 @@
   justify-content: center;
   align-items: center;
 
+  @include on-tablet {
+    gap: 1rem;
+  }
+
   &__container {
     display: flex;
     gap: 0.5rem;
   }
 
   &__item {
+    padding: 0;
     width: 32px;
     height: 32px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
+    border: 1px solid $border-color;
+
+    @include text-sm-semi;
 
     @include on-tablet {
       width: 40px;
       height: 40px;
+      @include text-base-semi;
     }
 
     @include on-desktop {
@@ -28,25 +37,30 @@
     }
 
     &--btn {
-      border: 2px solid $border-color;
       @include transition;
 
+      svg {
+        fill: $secondary;
+      }
+
       &:hover {
-        background: $secondary;
+        background: $accent;
         scale: 1.05;
       }
 
       &:active {
         scale: 0.95;
       }
+
+      &:disabled {
+        background: none;
+        opacity: 0.7;
+        scale: 1;
+      }
     }
 
     &--next {
-      transform: rotate(90deg);
-    }
-
-    &--prev {
-      transform: rotate(-90deg);
+      transform: rotate(180deg);
     }
   }
 
