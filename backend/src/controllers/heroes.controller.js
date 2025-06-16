@@ -1,6 +1,6 @@
 import { heroesService, heroImagesService } from '../services/index.js';
 import { ApiError } from '../exceptions/api.error.js';
-import { heroSchema } from '../schemas/index.js';
+import { heroSchema, heroUpdateSchema } from '../schemas/index.js';
 import { dynamicSchema } from '../utils/dynamicSchema.js';
 import { removeUploadedFiles } from '../utils/removeUploadedFiles.js';
 import { client } from '../utils/db.js';
@@ -72,27 +72,73 @@ const create = async (req, res, next) => {
   }
 };
 
-const update = async (req, res) => {
+const update = async (req, res, next) => {
   const { id } = req.params;
   const heroInformation = req.body;
+  const files = req.files;
 
-  const updatedSchema = dynamicSchema(Object.keys(heroInformation), heroSchema);
+  console.log(heroInformation);
+
+  const updatedSchema = dynamicSchema(
+    Object.keys(heroInformation),
+    heroUpdateSchema,
+  );
 
   const { error, value } = updatedSchema.validate(heroInformation);
 
   if (error) {
+    await removeUploadedFiles(files);
     throw ApiError.badRequest(error.message, {
       field: error.message,
     });
   }
 
-  const updatedHero = await heroesService.update({ id }, { ...value });
+  let imagesToRemove = [];
 
-  if (!updatedHero) {
-    throw ApiError.notFound();
+  try {
+    const result = await client.transaction(async (transaction) => {
+      const existingHero = await heroesService.getOneWithImages(
+        { id },
+        { transaction },
+      );
+      if (!existingHero) {
+        throw ApiError.notFound();
+      }
+
+      if (value.deletedImageIds && value.deletedImageIds.length > 0) {
+        const { images } = await heroImagesService.remove(
+          { id: value.deletedImageIds },
+          { transaction },
+        );
+        imagesToRemove = images;
+      }
+
+      const updatedHero = await heroesService.update({ id }, value, {
+        transaction,
+      });
+
+      const newImages = await heroImagesService.createMultiple(files, id, {
+        transaction,
+      });
+
+      return {
+        ...heroesService.normalize(updatedHero),
+        images: [
+          ...existingHero.images
+            .filter((img) => !value.deletedImageIds?.includes(img.id))
+            .map(heroImagesService.normalize),
+          ...newImages.map(heroImagesService.normalize),
+        ],
+      };
+    });
+
+    await removeUploadedFiles(imagesToRemove);
+
+    res.status(200).json(result);
+  } catch (error) {
+    await removeUploadedFiles(files);
+    next(error);
   }
-
-  res.status(200).json(heroesService.normalize(updatedHero));
 };
 
 const remove = async (req, res) => {

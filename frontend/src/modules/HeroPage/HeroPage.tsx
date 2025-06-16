@@ -1,75 +1,161 @@
-import { getFullHero } from '@/api/hero';
-import type { Hero } from '@/types';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import classNames from 'classnames';
+import { deleteHero, getFullHero } from '@/api/hero';
+import { type Hero } from '@/types';
 import { ApiError } from '@/utils/apiError';
-import { createUrl } from '@/utils/utility';
-import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { HeroView } from './components/HeroView';
+import { HeroEdit } from './components/HeroEdit';
+import { Loading } from '@/modules/shared/Loading';
+
+import styles from './styles.module.scss';
+import { MainNavigation } from '@/utils/constants';
+
+type ViewMode = 'view' | 'edit';
 
 export const HeroPage = () => {
-  const { id } = useParams();
+  const navigate = useNavigate();
+  const { id } = useParams<{ id: string }>();
+
   const [loading, setLoading] = useState(false);
-  const [err, setErr] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState('');
   const [hero, setHero] = useState<Hero | null>(null);
+  const [mode, setMode] = useState<ViewMode>('view');
+
+  const isCancelledRef = useRef(false);
+
+  const updateHeroData = useCallback((updatedHero: Hero) => {
+    setHero(updatedHero);
+  }, []);
+
+  const toggleEditMode = useCallback(() => {
+    setMode((prev) => (prev === 'view' ? 'edit' : 'view'));
+  }, []);
+
+  const fetchHero = useCallback(
+    async (heroId: string) => {
+      if (isCancelledRef.current) return;
+
+      setLoading(true);
+      setError('');
+
+      try {
+        const heroFromServer = await getFullHero(heroId);
+
+        if (!isCancelledRef.current) {
+          setHero(heroFromServer);
+        }
+      } catch (err) {
+        if (err instanceof ApiError && err.status === 404) {
+          navigate('/not-found', { replace: true });
+        } else {
+          setError(
+            err instanceof ApiError ? err.message : 'Something went wrong'
+          );
+        }
+      } finally {
+        setLoading(false);
+      }
+    },
+    [navigate]
+  );
 
   useEffect(() => {
-    const fetch = async () => {
-      setLoading(true);
-      try {
-        const heroFromServer = await getFullHero(id as string);
-        setHero(heroFromServer);
-      } catch (error) {
-        if (error instanceof ApiError) {
-          setErr(error.message);
-        } else {
-          setErr('Something went wrong');
-        }
-      }
-      setLoading(false);
+    isCancelledRef.current = false;
+
+    if (!id) {
+      navigate('/not-found', { replace: true });
+      return;
+    }
+
+    fetchHero(id);
+
+    return () => {
+      isCancelledRef.current = true;
     };
+  }, [id, fetchHero, navigate]);
 
-    fetch();
-  }, [id]);
+  const refetchHero = useCallback(() => {
+    if (id) fetchHero(id);
+  }, [id, fetchHero]);
 
-  if (loading) return <p>Loading hero...</p>;
-  if (err) return <p>Error: {err}</p>;
-  if (!hero) return <p>No hero data found.</p>;
+  const handlerDelete = () => {
+    setLoading(true);
+
+    if (id)
+      deleteHero(id)
+        .then(() => navigate(MainNavigation.HOME))
+        .catch((err) => {
+          setError(
+            err instanceof ApiError ? err.message : 'Something went wrong'
+          );
+        })
+        .finally(() => setLoading(false));
+  };
 
   return (
-    <main>
-      <header>
-        <h1>{hero.nickname}</h1>
-        {hero.real_name && <h2>{hero.real_name}</h2>}
-      </header>
+    hero && (
+      <div className={styles.hero}>
+        <div className={classNames(styles.hero__container, 'container')}>
+          {loading && !error && (
+            <div className={styles.hero__loading}>
+              <Loading />
+            </div>
+          )}
 
-      <section>
-        <h3>Origin</h3>
-        <p>{hero.origin_description || 'No origin description provided.'}</p>
-      </section>
+          {!loading && error && (
+            <div className={styles.hero__error}>
+              <p>Error: {error}</p>
+            </div>
+          )}
 
-      <section>
-        <h3>Superpowers</h3>
-        <p>{hero.superpowers || 'Unknown powers.'}</p>
-      </section>
+          {!loading && !error && !hero && (
+            <div className={styles.hero__notFound}>
+              <p>Hero not found</p>
+            </div>
+          )}
 
-      <section>
-        <h3>Catch Phrase</h3>
-        <blockquote>{hero.catch_phrase || '—'}</blockquote>
-      </section>
+          {!loading && !error && hero && (
+            <>
+              <div className={styles.hero__controls}>
+                {mode === 'edit' && (
+                  <button
+                    onClick={handlerDelete}
+                    className={classNames(
+                      styles.hero__controlButton,
+                      styles['hero__controlButton--del']
+                    )}
+                    disabled={isSubmitting}
+                  >
+                    Delete Hero
+                  </button>
+                )}
 
-      <section>
-        <h3>Images</h3>
-        {hero.images?.length > 0 ? (
-          <ul>
-            {hero.images.map((img) => (
-              <li key={img.id}>
-                <img src={createUrl(img.url)} alt={hero.nickname} width={300} />
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p>No images available.</p>
-        )}
-      </section>
-    </main>
+                <button
+                  onClick={toggleEditMode}
+                  className={classNames(styles.hero__controlButton)}
+                  disabled={isSubmitting}
+                >
+                  {mode === 'view' ? 'Edit Hero' : 'Cancel Edit'}
+                </button>
+              </div>
+
+              {mode === 'view' ? (
+                <HeroView hero={hero} />
+              ) : (
+                <HeroEdit
+                  hero={hero}
+                  onSave={updateHeroData}
+                  onCancel={() => setMode('view')}
+                  onRefetch={refetchHero}
+                  onSubmittingChange={setIsSubmitting}
+                />
+              )}
+            </>
+          )}
+        </div>
+      </div>
+    )
   );
 };

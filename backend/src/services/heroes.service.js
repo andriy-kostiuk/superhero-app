@@ -44,7 +44,7 @@ export const heroesService = {
     return rawHero?.toJSON() || null;
   },
 
-  async update(query, newParams) {
+  async update(query, newParams, options) {
     try {
       const [affectedRows, [updatedHero]] = await Hero.update(
         { ...newParams },
@@ -52,6 +52,7 @@ export const heroesService = {
           where: {
             ...query,
           },
+          ...options,
           returning: true,
         },
       );

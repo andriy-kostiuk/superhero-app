@@ -1,0 +1,12 @@
+.form {
+  background: $background;
+  padding: 1rem;
+  border-radius: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+
+  @include on-tablet {
+    padding: 2rem;
+  }
+}

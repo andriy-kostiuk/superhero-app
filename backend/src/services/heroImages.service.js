@@ -1,3 +1,4 @@
+import { Op } from 'sequelize';
 import { HeroImage } from '../models/index.js';
 
 export const heroImagesService = {
@@ -14,7 +15,7 @@ export const heroImagesService = {
       heroId,
       filename: file.filename,
       path: file.path,
-      url: '/upload/' + file.filename,
+      url: '/uploads/' + file.filename,
     }));
 
     const createdImages = await HeroImage.bulkCreate(imageData, {
@@ -32,8 +33,10 @@ export const heroImagesService = {
 
   async remove({ heroId, id }, options = {}) {
     const where = {};
+
     if (heroId) where.heroId = heroId;
-    if (id) where.id = id;
+
+    if (id) where.id = Array.isArray(id) ? { [Op.in]: id } : id;
 
     const images = await this.getAll(where, options);
 

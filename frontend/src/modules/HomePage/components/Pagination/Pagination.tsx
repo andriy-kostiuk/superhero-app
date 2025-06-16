@@ -41,8 +41,6 @@ export const Pagination: React.FC<Props> = ({
 
   const middlePages = getMiddlePages();
 
-  console.log('middlePages', middlePages);
-
   return (
     <div className={cn(styles.pagination, className)}>
       <button

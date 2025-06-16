@@ -18,7 +18,7 @@ export const useFormData = () => {
         });
       } else if (value instanceof File) {
         formData.append(key, value);
-      } else if (value != null && value !== '') {
+      } else if (value != null) {
         formData.append(key, String(value));
       }
     });

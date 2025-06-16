@@ -1,25 +1,22 @@
 import { useCallback, useState, type FC } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import classNames from 'classnames';
-import { heroSchema, type HeroFormValues } from '../../zodSchema/hero';
-import { Loading } from '@/modules/shared/Loading';
+import {
+  heroSchema,
+  type HeroFormValues,
+} from '@/modules/shared/zodSchema/hero';
 import { Popup } from '@/modules/shared/Popup';
-
-import styles from './styles.module.scss';
 import { createHero } from '@/api/hero';
 import { ApiError } from '@/utils/apiError';
 import { useFormData } from '@/hooks';
+import { FormTextField } from '@/modules/shared/FormTextField';
+import { FormFileField } from '@/modules/shared/FormFileField';
 
-type FieldName = keyof HeroFormValues;
+import styles from './styles.module.scss';
+import type { Field } from '@/types';
+import { ButtonWithLoader } from '@/modules/shared/ButtonWithLoader';
 
-interface Field {
-  name: FieldName;
-  label: string;
-  type: 'text' | 'textarea';
-}
-
-const fields: Field[] = [
+const fields: Field<HeroFormValues>[] = [
   { name: 'nickname', label: 'Nickname', type: 'text' },
   { name: 'real_name', label: 'Real Name', type: 'text' },
   {
@@ -52,18 +49,15 @@ export const HeroForm: FC<Props> = ({ triggerHeroesReload = () => {} }) => {
     type: 'error',
   });
 
-  const {
-    handleSubmit,
-    register,
-    reset,
-    setValue,
-    watch,
-    formState: { errors, isSubmitting },
-  } = useForm<HeroFormValues>({
+  const form = useForm<HeroFormValues>({
     resolver: zodResolver(heroSchema),
   });
 
-  const images = watch('images') || [];
+  const {
+    handleSubmit,
+    reset,
+    formState: { isSubmitting },
+  } = form;
 
   const onSubmit = async (data: HeroFormValues) => {
     const formData = createFormData(data);
@@ -82,15 +76,6 @@ export const HeroForm: FC<Props> = ({ triggerHeroesReload = () => {} }) => {
     }
   };
 
-  const handleFileChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const files = e.target.files;
-      if (!files) return;
-      setValue('images', Array.from(files), { shouldValidate: true });
-    },
-    [setValue]
-  );
-
   const handlePopupClose = useCallback(() => {
     setPopup((prev) => ({ ...prev, message: '' }));
   }, []);
@@ -100,94 +85,34 @@ export const HeroForm: FC<Props> = ({ triggerHeroesReload = () => {} }) => {
       <div className={styles.heroForm}>
         <div className='container'>
           <h2 className={styles.heroForm__title}>Create your hero now!</h2>
-          <form
-            className={styles.heroForm__form}
-            onSubmit={handleSubmit(onSubmit)}
-            encType='multipart/form-data'
-          >
-            {fields.map(({ name, label, type }) => {
-              const errorMessage = errors[name]?.message?.toString();
-
-              return (
-                <div
-                  key={name}
-                  className={classNames(styles.heroForm__group, {
-                    [styles['heroForm__group--invalid']]: !!errors[name],
-                  })}
-                >
-                  <label className={styles.heroForm__label} htmlFor={name}>
-                    {label}
-                  </label>
-                  {type === 'textarea' ? (
-                    <textarea
-                      {...register(name)}
-                      id={name}
-                      className={styles.heroForm__field}
-                      disabled={isSubmitting}
-                    />
-                  ) : (
-                    <input
-                      {...register(name)}
-                      id={name}
-                      className={styles.heroForm__field}
-                      type='text'
-                      disabled={isSubmitting}
-                    />
-                  )}
-                  {errorMessage && (
-                    <p className={styles.heroForm__err}>{errorMessage}</p>
-                  )}
-                </div>
-              );
-            })}
-
-            <div
-              className={classNames(styles.heroForm__group, {
-                [styles['heroForm__group--invalid']]: !!errors.images,
-              })}
+          <FormProvider {...form}>
+            <form
+              className={styles.heroForm__form}
+              onSubmit={handleSubmit(onSubmit)}
+              encType='multipart/form-data'
             >
-              <label className={styles.heroForm__label} htmlFor='images'>
-                Images (max 10)
-              </label>
-              <input
-                type='file'
-                accept='image/png, image/jpeg, image/webp'
-                multiple
-                onChange={handleFileChange}
-                className={styles.heroForm__field}
-                disabled={isSubmitting}
-                id='images'
-              />
-              {errors.images?.message && (
-                <p className={styles.heroForm__err}>{errors.images.message}</p>
-              )}
-              {images.length > 0 && (
-                <ul className={styles.heroForm__previewList}>
-                  {images.map((file, idx) => (
-                    <li className={styles.heroForm__previewItem} key={idx}>
-                      <p>{file.name}</p>
-                      <p>({(file.size / 1024).toFixed(1)} KB)</p>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
+              {fields.map(({ name, label, type }) => {
+                return (
+                  <FormTextField<HeroFormValues>
+                    key={name}
+                    name={name}
+                    type={type}
+                    label={label}
+                  />
+                );
+              })}
 
-            <div className={styles.heroForm__submitWrapper}>
-              {isSubmitting && (
-                <div className={styles.heroForm__loading} role='status'>
-                  <Loading />
-                </div>
-              )}
-              <button
-                type='submit'
-                disabled={isSubmitting}
-                className={styles.heroForm__submit}
-              >
+              <FormFileField
+                name='images'
+                accept='image/png, image/jpeg, image/webp'
+                label='Images (max 10)'
+              />
+
+              <ButtonWithLoader isSubmitting={isSubmitting}>
                 {isSubmitting ? 'Creating Hero...' : 'Create Hero'}
-              </button>
-            </div>
-          </form>
+              </ButtonWithLoader>
+            </form>
+          </FormProvider>
         </div>
       </div>
 

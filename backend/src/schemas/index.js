@@ -1,1 +1,1 @@
-export { heroSchema } from './hero.schema.js';
+export { heroSchema, heroUpdateSchema } from './hero.schema.js';

@@ -84,11 +84,17 @@ export const Heroes = () => {
 
         {!loading && !error && (
           <>
-            <ul className={styles.heroes__list}>
-              {heroes.map((hero) => (
-                <HeroCard hero={hero} key={hero.id} />
-              ))}
-            </ul>
+            {heroes.length ? (
+              <ul className={styles.heroes__list}>
+                {heroes.map((hero) => (
+                  <HeroCard hero={hero} key={hero.id} />
+                ))}
+              </ul>
+            ) : (
+              <p className={styles.heroes__empty}>
+                🦸‍♂️ No heroes created yet. Be the first to add one!
+              </p>
+            )}
 
             <Pagination
               {...pagination}

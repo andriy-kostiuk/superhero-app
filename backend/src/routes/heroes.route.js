@@ -12,5 +12,9 @@ heroesRouter.post(
   catchError(heroesController.create),
 );
 heroesRouter.get('/:id', catchError(heroesController.getOne));
-heroesRouter.patch('/:id', catchError(heroesController.update));
+heroesRouter.patch(
+  '/:id',
+  heroUploadMiddleware(),
+  catchError(heroesController.update),
+);
 heroesRouter.delete('/:id', catchError(heroesController.remove));

@@ -6,7 +6,7 @@ export const Logo = () => {
   return (
     <Link to={MainNavigation.HOME} className={styles.logo}>
       <img className={styles.logo__img} src='/images/logo.svg' />
-      SuperHero
+      HeroApp
     </Link>
   );
 };

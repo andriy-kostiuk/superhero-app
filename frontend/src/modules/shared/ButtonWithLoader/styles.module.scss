@@ -1,0 +1,41 @@
+@use 'sass:color';
+
+.btn {
+  width: fit-content;
+  margin: 0 auto;
+  position: relative;
+
+  &__loading {
+    position: absolute;
+    width: 32px;
+    height: 32px;
+    top: 50%;
+    left: -50px;
+    transform: translateY(-50%);
+  }
+
+  &__submit {
+    width: fit-content;
+    border-radius: 0.5rem;
+    padding-inline: 1.5rem;
+    height: 3rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: $white;
+    background: $secondary;
+
+    @include text-base-medium;
+    @include transition(0.4s, background);
+
+    &:hover {
+      background: color.scale($secondary, $lightness: 20%);
+    }
+
+    &:disabled {
+      cursor: default;
+      background: $secondary;
+      opacity: 0.5;
+    }
+  }
+}

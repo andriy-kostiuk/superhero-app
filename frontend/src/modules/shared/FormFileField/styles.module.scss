@@ -1,0 +1,122 @@
+@use 'sass:color';
+
+.group {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  position: relative;
+
+  &--invalid {
+    input,
+    textarea {
+      border: 2px solid $danger;
+      background-color: rgba($danger, 0.05);
+      animation: shake 0.3s ease-in-out;
+    }
+  }
+
+  &__label {
+    border-radius: 0.5rem;
+    padding: 1rem;
+    border: 1px solid $border-color;
+    background: $white;
+    color: inherit;
+    resize: vertical;
+    transition: border 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+  }
+
+  &__field:focus + &__label {
+    outline: none;
+    border-color: $secondary;
+    box-shadow: 0 0 0 3px rgba($accent, 0.25);
+  }
+
+  &__err {
+    position: absolute;
+    left: 0;
+    bottom: -1.5rem;
+    color: $danger;
+    margin-left: 0.5rem;
+
+    opacity: 0;
+    transform: translateY(4px);
+    animation: fadeInUp 0.3s ease-out forwards;
+
+    @include text-sm-regular;
+
+    @keyframes fadeInUp {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  }
+
+  &__previewList {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    background: color.scale($black, $lightness: 80%);
+    color: $text;
+    padding: 1rem;
+    border-radius: 1rem;
+  }
+
+  &__previewItem {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  &__previewImage {
+    width: 80px;
+    height: 80px;
+    display: block;
+    object-fit: cover;
+    border-radius: 0.5rem;
+  }
+
+  &__removeBtn {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: $white;
+
+    @include transition(0.4s, opacity);
+
+    &:hover {
+      opacity: 0.8;
+      svg {
+        scale: 1.3;
+      }
+    }
+
+    svg {
+      width: 100%;
+      height: 100%;
+
+      @include transition;
+    }
+  }
+}
+
+@keyframes shake {
+  0% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-4px);
+  }
+  50% {
+    transform: translateX(4px);
+  }
+  75% {
+    transform: translateX(-4px);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}

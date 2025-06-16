@@ -19,10 +19,9 @@ export const createHero = (formData: FormData) => {
 
 export const updateHero = (
   id: string,
-  data: Partial<Omit<Hero, 'id' | 'images'>> | FormData,
-  isFormData = false
+  data: Partial<Omit<Hero, 'id' | 'images'>> | FormData
 ) => {
-  return client.patch<Hero>(`/heroes/${id}`, data, isFormData);
+  return client.patch<Hero>(`/heroes/${id}`, data, true);
 };
 
 export const deleteHero = (id: string) => {

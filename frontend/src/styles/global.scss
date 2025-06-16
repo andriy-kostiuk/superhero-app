@@ -49,6 +49,11 @@ button {
   cursor: pointer;
 }
 
+input,
+textarea {
+  font-family: inherit;
+}
+
 .container {
   max-width: $max-width;
   margin: 0 auto;
