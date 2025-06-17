@@ -77,8 +77,6 @@ const update = async (req, res, next) => {
   const heroInformation = req.body;
   const files = req.files;
 
-  console.log(heroInformation);
-
   const updatedSchema = dynamicSchema(
     Object.keys(heroInformation),
     heroUpdateSchema,

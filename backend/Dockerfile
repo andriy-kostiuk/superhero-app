@@ -14,4 +14,4 @@ COPY . .
 
 EXPOSE 5000
 
-CMD ["sh", "-c", "npm run init:db && npm run dev"]
+CMD ["npm", "run", "dev"]
